@@ -1,5 +1,5 @@
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Camera Selector with Gemini Analysis and Object Memory</title>
     <style>
@@ -268,7 +268,16 @@
             border-radius: 5px;
             font-size: 14px;
         }
+        .filter-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 100%;
+        }
         .filter-input {
+            flex: 1;
             width: 100%;
             max-width: 100%;
             margin: 10px 0;
@@ -277,13 +286,18 @@
             border-radius: 5px;
             font-size: 14px;
         }
+        .filter-label {
+            font-style: normal;
+            margin-bottom: 5px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="title-container">
             <img src="/a/bf8c50d1-fef0-4f67-80c8-d536201a1eda" alt="A vibrant red rose with detailed petals" class="title-rose">
-            <h1>Camera Selector with Gemini Analysis and Object Memory</h1>
+            <h1 id="title">Camera Selector with Gemini Analysis and Object Memory</h1>
         </div>
         <button id="saveConfigButtonTop" class="save-config-button">Save Configuration to File</button>
         <input type="text" id="apiKeyInput" placeholder="Enter your Gemini API key">
@@ -299,7 +313,6 @@
             <option value="pt">Portugu&#xea;s</option>
             <option value="ja">&#x65e5;&#x672c;&#x8a9e;</option>
             <option value="ko">&#xd55c;&#xad6d;&#xc5b4;</option>
-            <option value="zh-CN">&#x4e2d;&#x6587;&#xff08;&#x7b80;&#x4f53;&#xff09;</option>
             <option value="zh-TW">&#x4e2d;&#x6587;&#xff08;&#x7e41;&#x9ad4;&#xff09;</option>
         </select>
         <br>
@@ -308,8 +321,12 @@
         <button id="captureButton">Capture Photo and Analyze</button>
         <div class="spinner" id="spinner"></div>
         <div id="analysisResult"></div>
-        <h2>Remembered Objects</h2>
-        <input type="text" id="filterInput" class="filter-input" placeholder="Filter remembered objects...">
+        <h2 class="filter-label" id="filter-label">Search Objects</h2>
+        <div class="filter-input-container">
+          <input type="text" id="filterInput" class="filter-input" placeholder="Filter remembered objects...">
+          <button class="mic-button" id="filterMic">&#x1f3a4;</button>
+       </div>
+       <h2 id="remembered-objects">Remembered Objects</h2>
         <div class="custom-object-container">
             <input type="text" id="customObjectInput" placeholder="Type a custom object to remember...">
             <button class="mic-button" id="customObjectMic">&#x1f3a4;</button>
@@ -368,7 +385,9 @@ const translations = {
     deletePhotoConfirm: "Are you sure you want to delete this photo?",
     uploadConfigButton: "Upload Configuration from File",
     uploadInstruction: "Please upload a JSON file containing your object configurations.",
-    uploadFinished: "Finished Uploading"
+    filterPlaceholder:  "Filter remembered objects...",
+    uploadFinished: "Finished Uploading",
+    filterLabel: "Search Objects"
   },
   es: {
     title: "Selector de Cámara con Análisis Gemini y Memoria de Objetos",
@@ -389,7 +408,9 @@ const translations = {
     deletePhotoConfirm: "¿Está seguro de que desea eliminar esta foto?",
     uploadConfigButton: "Cargar Configuración desde Archivo",
     uploadInstruction: "Por favor carga un archivo JSON que contenga tus configuraciones de objetos.",
-    uploadFinished: "Carga Finalizada"
+    filterPlaceholder:  "Filtrar objetos recordados...",
+    uploadFinished: "Carga Finalizada",
+    filterLabel: "Buscar Objetos"
   },
   fr: {
     title: "Sélecteur de Caméra avec Analyse Gemini et Mémoire d'Objets",
@@ -410,7 +431,9 @@ const translations = {
     deletePhotoConfirm: "Êtes-vous sûr de vouloir supprimer cette photo?",
     uploadConfigButton: "Télécharger la Configuration depuis un Fichier",
     uploadInstruction: "Veuillez télécharger un fichier JSON contenant vos configurations d'objets.",
-    uploadFinished: "Téléchargement Terminé"
+    filterPlaceholder:  "Filtrer les objets mémorisés...",
+    uploadFinished: "Téléchargement Terminé",
+    filterLabel: "Rechercher les Objets"
   },
   ko: {
     "title": "카메라 선택기와 Gemini 분석 및 객체 메모리",
@@ -419,7 +442,7 @@ const translations = {
     "rememberedObjects": "기억된 객체",
     "analyzing": "사진을 캡처하고 분석 중...",
     "apiKeyError": "Gemini API 키를 입력해주세요.",
-    "cameraError": "선택한 카메라에 접근할 수 없습니다. 다른 카메라를 시도하거나 권한을 확인하세요.",
+    "cameraError": "선택한 카메라에 접근할 수 없습니다. 다른 카메ライン을 시도하거나 권한을 확인하세요.",
     "initError": "사용 가능한 카메라가 없습니다. 기기와 권한을 확인하세요.",
     "saveConfigButton": "설정을 파일로 저장",
     "deleteConfirm": "이 항목을 삭제하시겠습니까?",
@@ -427,11 +450,13 @@ const translations = {
     "customObjectPlaceholder": "저장할 사용자 정의 객체를 입력하세요...",
     "addCustomObject": "객체 추가",
     "microphoneNotSupported": "이 브라우저는 음성 인식을 지원하지 않습니다.",
-    "objectAdded": "객체가 성공적으로 추가되었습니다!",
+    "objectAdded": "객체가 추가되었습니다!",
     "deletePhotoConfirm": "이 사진을 삭제하시겠습니까?",
     "uploadConfigButton": "파일에서 설정 업로드",
     "uploadInstruction": "객체 설정이 포함된 JSON 파일을 업로드하세요.",
-    "uploadFinished": "업로드 완료"
+     filterPlaceholder:  "기억된 객체를 필터링...",
+    "uploadFinished": "업로드 완료",
+    filterLabel: "객체 검색"
   },
   de: {
     "title": "Kamera-Auswahl mit Gemini-Analyse und Objektspeicher",
@@ -452,7 +477,9 @@ const translations = {
     "deletePhotoConfirm": "Sind Sie sicher, dass Sie dieses Foto löschen möchten?",
     "uploadConfigButton": "Einstellungen aus Datei hochladen",
     "uploadInstruction": "Bitte laden Sie eine JSON-Datei mit Ihren Objektkonfigurationen hoch.",
-    "uploadFinished": "Upload abgeschlossen"
+    filterPlaceholder:  "Gespeicherte Objekte filtern...",
+    "uploadFinished": "Upload abgeschlossen",
+     filterLabel: "Objekte suchen"
   },
   it: {
     "title": "Selettore di Fotocamera con Analisi Gemini e Memoria Oggetti",
@@ -473,7 +500,9 @@ const translations = {
     "deletePhotoConfirm": "Sei sicuro di voler eliminare questa foto?",
     "uploadConfigButton": "Carica Configurazione da File",
     "uploadInstruction": "Carica un file JSON che contenga le tue configurazioni degli oggetti.",
-    "uploadFinished": "Caricamento completato"
+    filterPlaceholder: "Filtra gli oggetti memorizzati...",
+    "uploadFinished": "Caricamento completato",
+     filterLabel: "Cerca oggetti"
   },
   pt: {
     "title": "Seletor de Câmera com Análise Gemini e Memória de Objetos",
@@ -494,7 +523,9 @@ const translations = {
     "deletePhotoConfirm": "Tem certeza de que deseja excluir esta foto?",
     "uploadConfigButton": "Carregar Configuração de Arquivo",
     "uploadInstruction": "Por favor, carregue um arquivo JSON contendo suas configurações de objetos.",
-    "uploadFinished": "Carregamento concluído"
+    filterPlaceholder: "Filtrar objetos lembrados...",
+    "uploadFinished": "Carregamento concluído",
+    filterLabel: "Procurar objetos"
   },
   'ja': {
     title: "Gemini解析カメラセレクターとオブジェクトメモリ",
@@ -515,10 +546,12 @@ const translations = {
     deletePhotoConfirm: "この写真を削除してもよろしいですか？",
     uploadConfigButton: "ファイルから設定をアップロードする",
     uploadInstruction: "オブジェクト設定を含むJSONファイルをアップロードしてください。",
-    uploadFinished: "アップロード完了"
+    filterPlaceholder: "記憶されたオブジェクトをフィルタ...",
+    uploadFinished: "アップロード完了",
+    filterLabel: "オブジェクトを検索"
   },
   'zh-TW': {
-    title: "Gemini 分析相機選擇器 和 物體記憶",
+     title: "Gemini 分析相機選擇器 和 物體記憶",
     apiKeyPlaceholder: "請輸入您的 Gemini API 金鑰",
     captureButton: "拍攝照片並分析",
     rememberedObjects: "記住的物件",
@@ -536,8 +569,10 @@ const translations = {
     deletePhotoConfirm: "您確定要刪除這張照片嗎？",
     uploadConfigButton: "從文件上傳配置",
     uploadInstruction: "請上傳一個包含您的對象配置的 JSON 文件。",
-    uploadFinished: "上傳完成"
-  }
+    filterPlaceholder: "篩選已記住的物件...",
+     uploadFinished: "上傳完成",
+    filterLabel: "搜尋物件"
+  },
 };
 function filterObjects(searchText) {
   const normalizedSearch = searchText ? searchText.toLowerCase() : '';
@@ -604,11 +639,11 @@ function editMemory(index) {
                 </div>
                 <div style="margin-top: 15px; text-align: right;">
                     <button onclick="this.parentElement.parentElement.remove()" 
-                        style="padding: 12px 24px; margin-right: 10px; background: #dc3545; color: white; border: none; border-radius: 4px; min-height: 44px;">
+                        style="padding: 10px 20px; margin-right: 10px; background: #dc3545; color: white; border: none; border-radius: 4px; min-height: 44px;">
                         Cancel
                     </button>
                     <button onclick="saveEdit(${index}, this.parentElement.parentElement)" 
-                        style="padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 4px; min-height: 44px;">
+                        style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; min-height: 44px;">
                         Save
                     </button>
                 </div>
@@ -749,6 +784,56 @@ function setupCustomObjectSpeechRecognition() {
   recognition.onresult = event => {
     const transcript = event.results[0][0].transcript;
     customInput.value = transcript;
+    filterObjects(transcript);
+  };
+  micButton.addEventListener('click', () => {
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      document.querySelectorAll('.mic-button').forEach(button => {
+        if (button.classList.contains('recording')) {
+          button.classList.remove('recording');
+        }
+      });
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Recognition start error:', error);
+        isRecording = false;
+        micButton.classList.remove('recording');
+      }
+    }
+  });
+}
+function setupFilterSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert(translations[languageSelect.value].microphoneNotSupported);
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.lang = languageSelect.value;
+  const micButton = document.getElementById('filterMic');
+  const filterInput = document.getElementById('filterInput');
+  let isRecording = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    micButton.classList.add('recording');
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    micButton.classList.remove('recording');
+  };
+  recognition.onerror = event => {
+    isRecording = false;
+    micButton.classList.remove('recording');
+    console.error('Speech recognition error:', event.error);
+  };
+  recognition.onresult = event => {
+    const transcript = event.results[0][0].transcript;
+    filterInput.value = transcript;
     filterObjects(transcript);
   };
   micButton.addEventListener('click', () => {
@@ -960,18 +1045,14 @@ function updateLanguage(lang) {
   document.querySelector('h1').textContent = texts.title;
   apiKeyInput.placeholder = texts.apiKeyPlaceholder;
   captureButton.textContent = texts.captureButton;
-  document.querySelector('h2').textContent = texts.rememberedObjects;
+  document.querySelector('h2#remembered-objects').textContent = texts.rememberedObjects;
+  document.querySelector('h2.filter-label').textContent = texts.filterLabel || "Search Objects";
   document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
   document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
   document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
-  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
-  uploadMessage.textContent = texts.uploadFinished;
+  document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
+  document.getElementById('addObjectButton').textContent = texts.addCustomObject;
   updateObjectMemory();
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang;
-  }
   const micButtons = document.querySelectorAll(".mic-button");
   micButtons.forEach(button => {
     const id = button.id;
@@ -981,6 +1062,7 @@ function updateLanguage(lang) {
     }
   });
   setupCustomObjectSpeechRecognition();
+  setupFilterSpeechRecognition();
 }
 async function populateCameraList() {
   try {
@@ -1141,7 +1223,7 @@ async function captureAndAnalyze() {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the main object and adjectives describing it. Do not include verbs, people, body parts such as hands feet head, actions, or descriptions of movement. Focus solely on the main object's name and its color.`
+            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the adjectives and object describing it. Do not include verbs, people, punctuations, body parts such as hands feet head, actions, or descriptions of movement. Put the adjectives in front of the object. Focus solely on the main object's name and their characteristics.`
           }, {
             inline_data: {
               mime_type: "image/jpeg",
@@ -1278,6 +1360,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchText = e.target.value.trim();
     filterObjects(searchText);
   });
+  setupFilterSpeechRecognition();
 });
 captureButton.addEventListener("click", captureAndAnalyze);
 document.getElementById("saveConfigButtonTop").addEventListener("click", saveConfigurationToFile);
@@ -1300,6 +1383,7 @@ languageSelect.addEventListener("change", event => {
     }
   });
   setupCustomObjectSpeechRecognition();
+  setupFilterSpeechRecognition();
 });
 document.getElementById("addObjectButton").addEventListener("click", () => {
   const customInput = document.getElementById("customObjectInput");
@@ -1343,5 +1427,32 @@ document.getElementById("customObjectInput").addEventListener("input", e => {
   }
 });
 updateLanguage("en");
-updateObjectMemory();</script>
+updateObjectMemory();
+function updateLanguage(lang) {
+  const texts = translations[lang] || translations.en;
+  document.querySelector('h1').textContent = texts.title;
+  apiKeyInput.placeholder = texts.apiKeyPlaceholder;
+  captureButton.textContent = texts.captureButton;
+  document.querySelector('h2#remembered-objects').textContent = texts.rememberedObjects;
+  document.querySelector('h2.filter-label').textContent = texts.filterLabel || "Search Objects";
+  document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
+  document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
+  document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
+  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
+  uploadMessage.textContent = texts.uploadFinished;
+  document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
+  document.getElementById('addObjectButton').textContent = texts.addCustomObject;
+  updateObjectMemory();
+  const micButtons = document.querySelectorAll(".mic-button");
+  micButtons.forEach(button => {
+    const id = button.id;
+    if (id && id.startsWith("mic-")) {
+      const index = parseInt(id.split("-")[1]);
+      setupSpeechRecognition(index);
+    }
+  });
+  setupCustomObjectSpeechRecognition();
+  setupFilterSpeechRecognition();
+}
+</script>
 </body></html>
