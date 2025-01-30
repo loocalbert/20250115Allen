@@ -332,14 +332,14 @@
         </select>
         <select id="languageSelect">
             <option value="en">English</option>
-            <option value="es">Espa&#xf1;ol</option>
-            <option value="fr">Fran&#xe7;ais</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
             <option value="de">Deutsch</option>
             <option value="it">Italiano</option>
-            <option value="pt">Portugu&#xea;s</option>
-            <option value="ja">&#x65e5;&#x672c;&#x8a9e;</option>
-            <option value="ko">&#xd55c;&#xad6d;&#xc5b4;</option>
-            <option value="zh-TW">&#x4e2d;&#x6587;&#xff08;&#x7e41;&#x9ad4;&#xff09;</option>
+            <option value="pt">Português</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="zh-TW">中文(繁體)</option>
         </select>
         <br>
         <video id="cameraFeed" autoplay playsinline></video>
@@ -365,7 +365,9 @@
         <div id="uploadMessage" style="display:none; margin-top: 10px; font-style: italic; color: green;">Finished Uploading</div>
     </div>
 
-    <script>const cameraFeed = document.getElementById('cameraFeed');
+    <script>
+/* -------------------- Global Variables & Elements -------------------- */
+const cameraFeed = document.getElementById('cameraFeed');
 const captureButton = document.getElementById('captureButton');
 const cameraSelect = document.getElementById('cameraSelect');
 const analysisResult = document.getElementById('analysisResult');
@@ -377,7 +379,17 @@ const uploadMessage = document.getElementById('uploadMessage');
 const filterInput = document.getElementById('filterInput');
 let currentStream;
 let capturedImage;
-let rememberedObjects = JSON.parse(localStorage.getItem('rememberedObjects') || '[]').map(obj => typeof obj === 'string' ? {} : obj);
+
+/*
+   這裡存放所有已辨識或自訂的物品。
+   不再限制最多 5 個，並可為每個物品多存一個 drawer (A1, A2…)
+*/
+let rememberedObjects = JSON.parse(localStorage.getItem('rememberedObjects') || '[]').map(obj => {
+  if (typeof obj === 'string') return {};
+  return obj;
+});
+
+/* -------------------- Translations -------------------- */
 const objectTranslations = {
   "detected": {
     en: "detected",
@@ -391,6 +403,7 @@ const objectTranslations = {
     "zh-TW": "檢測到"
   }
 };
+
 const translations = {
   en: {
     title: "Smart Object Keeper",
@@ -407,7 +420,7 @@ const translations = {
     customObjectPlaceholder: "Type a custom object to remember...",
     addCustomObject: "Add Object",
     microphoneNotSupported: "Speech recognition is not supported in this browser.",
-    objectAdded: 'Object added successfully!',
+    objectAdded: "Object added successfully!",
     deletePhotoConfirm: "Are you sure you want to delete this photo?",
     uploadConfigButton: "Upload Configuration from File",
     uploadInstruction: "Please upload a JSON file containing your object configurations.",
@@ -430,7 +443,7 @@ const translations = {
     customObjectPlaceholder: "Escriba un objeto personalizado para recordar...",
     addCustomObject: "Agregar Objeto",
     microphoneNotSupported: "El reconocimiento de voz no está soportado en este navegador.",
-    objectAdded: '¡Objeto agregado exitosamente!',
+    objectAdded: "¡Objeto agregado exitosamente!",
     deletePhotoConfirm: "¿Está seguro de que desea eliminar esta foto?",
     uploadConfigButton: "Cargar Configuración desde Archivo",
     uploadInstruction: "Por favor carga un archivo JSON que contenga tus configuraciones de objetos.",
@@ -453,7 +466,7 @@ const translations = {
     customObjectPlaceholder: "Tapez un objet personnalisé à mémoriser...",
     addCustomObject: "Ajouter l'Objet",
     microphoneNotSupported: "La reconnaissance vocale n'est pas prise en charge dans ce navigateur.",
-    objectAdded: 'Objet ajouté avec succès!',
+    objectAdded: "Objet ajouté avec succès!",
     deletePhotoConfirm: "Êtes-vous sûr de vouloir supprimer cette photo?",
     uploadConfigButton: "Télécharger la Configuration depuis un Fichier",
     uploadInstruction: "Veuillez télécharger un fichier JSON contenant vos configurations d'objets.",
@@ -462,95 +475,95 @@ const translations = {
     filterLabel: "Rechercher les Objets"
   },
   ko: {
-    "title": "스마트 오브젝트 키퍼",
-    "apiKeyPlaceholder": "Gemini API 키를 입력하세요",
-    "captureButton": "사진 캡처 및 분석",
-    "rememberedObjects": "기억된 객체",
-    "analyzing": "사진을 캡처하고 분석 중...",
-    "apiKeyError": "Gemini API 키를 입력해주세요.",
-    "cameraError": "선택한 카메라에 접근할 수 없습니다. 다른 카메라인을 시도하거나 권한을 확인하세요.",
-    "initError": "사용 가능한 카메라가 없습니다. 기기와 권한을 확인하세요.",
-    "saveConfigButton": "설정을 파일로 저장",
-    "deleteConfirm": "이 항목을 삭제하시겠습니까?",
-    "editPrompt": "객체 편집:",
-    "customObjectPlaceholder": "기억할 사용자 정의 객체를 입력하세요...",
-    "addCustomObject": "객체 추가",
-    "microphoneNotSupported": "이 브라우저는 음성 인식을 지원하지 않습니다.",
-    "objectAdded": "객체가 추가되었습니다!",
-    "deletePhotoConfirm": "이 사진을 삭제하시겠습니까?",
-    "uploadConfigButton": "파일에서 설정 업로드",
-    "uploadInstruction": "객체 설정을 포함하는 JSON 파일을 업로드하세요.",
+    title: "스마트 오브젝트 키퍼",
+    apiKeyPlaceholder: "Gemini API 키를 입력하세요",
+    captureButton: "사진 캡처 및 분석",
+    rememberedObjects: "기억된 객체",
+    analyzing: "사진을 캡처하고 분석 중...",
+    apiKeyError: "Gemini API 키를 입력해주세요.",
+    cameraError: "선택한 카메라에 접근할 수 없습니다. 다른 카메라인을 시도하거나 권한을 확인하세요.",
+    initError: "사용 가능한 카메라가 없습니다. 기기와 권한을 확인하세요.",
+    saveConfigButton: "설정을 파일로 저장",
+    deleteConfirm: "이 항목을 삭제하시겠습니까?",
+    editPrompt: "객체 편집:",
+    customObjectPlaceholder: "기억할 사용자 정의 객체를 입력하세요...",
+    addCustomObject: "객체 추가",
+    microphoneNotSupported: "이 브라우저는 음성 인식을 지원하지 않습니다.",
+    objectAdded: "객체가 추가되었습니다!",
+    deletePhotoConfirm: "이 사진을 삭제하시겠습니까?",
+    uploadConfigButton: "파일에서 설정 업로드",
+    uploadInstruction: "객체 설정을 포함하는 JSON 파일을 업로드하세요.",
     filterPlaceholder:  "기억된 객체를 필터링...",
-    "uploadFinished": "업로드 완료",
+    uploadFinished: "업로드 완료",
     filterLabel: "객체 검색"
   },
   de: {
-     "title": "Intelligenter Objekthalter",
-    "apiKeyPlaceholder": "Geben Sie Ihren Gemini-API-Schlüssel ein",
-    "captureButton": "Foto aufnehmen und analysieren",
-    "rememberedObjects": "Gespeicherte Objekte",
-    "analyzing": "Foto wird aufgenommen und analysiert...",
-    "apiKeyError": "Bitte geben Sie Ihren Gemini-API-Schlüssel ein.",
-    "cameraError": "Auf die ausgewählte Kamera kann nicht zugegriffen werden. Versuchen Sie es mit einer anderen oder überprüfen Sie Ihre Berechtigungen.",
-    "initError": "Es kann auf keine Kamera zugegriffen werden. Überprüfen Sie Ihr Gerät und Ihre Berechtigungen.",
-    "saveConfigButton": "Einstellungen in Datei speichern",
-    "deleteConfirm": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
-    "editPrompt": "Objekt bearbeiten:",
-    "customObjectPlaceholder": "Geben Sie ein benutzerdefiniertes Objekt ein, das gespeichert werden soll...",
-    "addCustomObject": "Objekt hinzufügen",
-    "microphoneNotSupported": "Spracherkennung wird in diesem Browser nicht unterstützt.",
-    "objectAdded": "Objekt erfolgreich hinzugefügt!",
-    "deletePhotoConfirm": "Sind Sie sicher, dass Sie dieses Foto löschen möchten?",
-    "uploadConfigButton": "Einstellungen aus Datei hochladen",
-    "uploadInstruction": "Bitte laden Sie eine JSON-Datei mit Ihren Objektkonfigurationen hoch.",
+    title: "Intelligenter Objekthalter",
+    apiKeyPlaceholder: "Geben Sie Ihren Gemini-API-Schlüssel ein",
+    captureButton: "Foto aufnehmen und analysieren",
+    rememberedObjects: "Gespeicherte Objekte",
+    analyzing: "Foto wird aufgenommen und analysiert...",
+    apiKeyError: "Bitte geben Sie Ihren Gemini-API-Schlüssel ein.",
+    cameraError: "Auf die ausgewählte Kamera kann nicht zugegriffen werden. Versuchen Sie es mit einer anderen oder überprüfen Sie Ihre Berechtigungen.",
+    initError: "Es kann auf keine Kamera zugegriffen werden. Überprüfen Sie Ihr Gerät und Ihre Berechtigungen.",
+    saveConfigButton: "Einstellungen in Datei speichern",
+    deleteConfirm: "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
+    editPrompt: "Objekt bearbeiten:",
+    customObjectPlaceholder: "Geben Sie ein benutzerdefiniertes Objekt ein, das gespeichert werden soll...",
+    addCustomObject: "Objekt hinzufügen",
+    microphoneNotSupported: "Spracherkennung wird in diesem Browser nicht unterstützt.",
+    objectAdded: "Objekt erfolgreich hinzugefügt!",
+    deletePhotoConfirm: "Sind Sie sicher, dass Sie dieses Foto löschen möchten?",
+    uploadConfigButton: "Einstellungen aus Datei hochladen",
+    uploadInstruction: "Bitte laden Sie eine JSON-Datei mit Ihren Objektkonfigurationen hoch.",
     filterPlaceholder: "Gespeicherte Objekte filtern...",
-    "uploadFinished": "Upload abgeschlossen",
+    uploadFinished: "Upload abgeschlossen",
     filterLabel: "Objekte suchen"
   },
   it: {
-    "title": "Gestore Intelligente di Oggetti",
-    "apiKeyPlaceholder": "Inserisci la tua chiave API di Gemini",
-    "captureButton": "Cattura Foto e Analizza",
-    "rememberedObjects": "Oggetti Salvati",
-    "analyzing": "Catturando foto e analizzando...",
-    "apiKeyError": "Per favore inserisci la tua chiave API di Gemini.",
-    "cameraError": "Impossibile accedere alla fotocamera selezionata. Prova con un'altra o verifica i permessi.",
-    "initError": "Impossibile accedere a nessuna fotocamera. Controlla il tuo dispositivo e i permessi.",
-    "saveConfigButton": "Salva Configurazione in File",
-    "deleteConfirm": "Sei sicuro di voler eliminare questo elemento?",
-    "editPrompt": "Modifica oggetto:",
-    "customObjectPlaceholder": "Scrivi un oggetto personalizzato da salvare...",
-    "addCustomObject": "Aggiungi Oggetto",
-    "microphoneNotSupported": "Il riconoscimento vocale non è supportato in questo browser.",
-    "objectAdded": "Oggetto aggiunto con successo!",
-    "deletePhotoConfirm": "Sei sicuro di voler eliminare questa foto?",
-    "uploadConfigButton": "Carica Configurazione da File",
-    "uploadInstruction": "Carica un file JSON che contenga le tue configurazioni degli oggetti.",
+    title: "Gestore Intelligente di Oggetti",
+    apiKeyPlaceholder: "Inserisci la tua chiave API di Gemini",
+    captureButton: "Cattura Foto e Analizza",
+    rememberedObjects: "Oggetti Salvati",
+    analyzing: "Catturando foto e analizzando...",
+    apiKeyError: "Per favore inserisci la tua chiave API di Gemini.",
+    cameraError: "Impossibile accedere alla fotocamera selezionata. Prova con un'altra o verifica i permessi.",
+    initError: "Impossibile accedere a nessuna fotocamera. Controlla il tuo dispositivo e i permessi.",
+    saveConfigButton: "Salva Configurazione in File",
+    deleteConfirm: "Sei sicuro di voler eliminare questo elemento?",
+    editPrompt: "Modifica oggetto:",
+    customObjectPlaceholder: "Scrivi un oggetto personalizzato da salvare...",
+    addCustomObject: "Aggiungi Oggetto",
+    microphoneNotSupported: "Il riconoscimento vocale non è supportato in questo browser.",
+    objectAdded: "Oggetto aggiunto con successo!",
+    deletePhotoConfirm: "Sei sicuro di voler eliminare questa foto?",
+    uploadConfigButton: "Carica Configurazione da File",
+    uploadInstruction: "Carica un file JSON che contenga le tue configurazioni degli oggetti.",
     filterPlaceholder: "Filtra gli oggetti memorizzati...",
-    "uploadFinished": "Caricamento completato",
+    uploadFinished: "Caricamento completato",
     filterLabel: "Cerca oggetti"
   },
   pt: {
-     "title": "Guardião Inteligente de Objetos",
-    "apiKeyPlaceholder": "Insira sua chave API do Gemini",
-    "captureButton": "Capturar Foto e Analisar",
-    "rememberedObjects": "Objetos Salvos",
-    "analyzing": "Capturando foto e analisando...",
-    "apiKeyError": "Por favor, insira sua chave API do Gemini.",
-    "cameraError": "Não é possível acessar a câmera selecionada. Tente outra ou verifique suas permissões.",
-    "initError": "Não é possível acessar nenhuma câmera. Verifique seu dispositivo e permissões.",
-    "saveConfigButton": "Salvar Configuração em Arquivo",
-    "deleteConfirm": "Tem certeza de que deseja excluir este item?",
-    "editPrompt": "Editar objeto:",
-    "customObjectPlaceholder": "Digite um objeto personalizado para salvar...",
-    "addCustomObject": "Adicionar Objeto",
-    "microphoneNotSupported": "O reconhecimento de voz não é suportado neste navegador.",
-    "objectAdded": "Objeto adicionado com sucesso!",
-    "deletePhotoConfirm": "Tem certeza de que deseja excluir esta foto?",
-    "uploadConfigButton": "Carregar Configuração de Arquivo",
-    "uploadInstruction": "Por favor, carregue um arquivo JSON contendo suas configurações de objetos.",
+    title: "Guardião Inteligente de Objetos",
+    apiKeyPlaceholder: "Insira sua chave API do Gemini",
+    captureButton: "Capturar Foto e Analisar",
+    rememberedObjects: "Objetos Salvos",
+    analyzing: "Capturando foto e analisando...",
+    apiKeyError: "Por favor, insira sua chave API do Gemini.",
+    cameraError: "Não é possível acessar a câmera selecionada. Tente outra ou verifique suas permissões.",
+    initError: "Não é possível acessar nenhuma câmera. Verifique seu dispositivo e permissões.",
+    saveConfigButton: "Salvar Configuração em Arquivo",
+    deleteConfirm: "Tem certeza de que deseja excluir este item?",
+    editPrompt: "Editar objeto:",
+    customObjectPlaceholder: "Digite um objeto personalizado para salvar...",
+    addCustomObject: "Adicionar Objeto",
+    microphoneNotSupported: "O reconhecimento de voz não é suportado neste navegador.",
+    objectAdded: "Objeto adicionado com sucesso!",
+    deletePhotoConfirm: "Tem certeza de que deseja excluir esta foto?",
+    uploadConfigButton: "Carregar Configuração de Arquivo",
+    uploadInstruction: "Por favor, carregue um arquivo JSON contendo suas configurações de objetos.",
     filterPlaceholder: "Filtrar objetos lembrados...",
-    "uploadFinished": "Carregamento concluído",
+    uploadFinished: "Carregamento concluído",
     filterLabel: "Procurar objetos"
   },
   'ja': {
@@ -577,7 +590,7 @@ const translations = {
     filterLabel: "オブジェクトを検索"
   },
   'zh-TW': {
-     title: "智慧物品管理員",
+    title: "智慧物品管理員",
     apiKeyPlaceholder: "請輸入您的 Gemini API 金鑰",
     captureButton: "拍攝照片並分析",
     rememberedObjects: "記住的物件",
@@ -591,7 +604,7 @@ const translations = {
     customObjectPlaceholder: "輸入要記住的自定義物件...",
     addCustomObject: "新增物件",
     microphoneNotSupported: "此瀏覽器不支援語音辨識。",
-    objectAdded: '物件新增成功！',
+    objectAdded: "物件新增成功！",
     deletePhotoConfirm: "您確定要刪除這張照片嗎？",
     uploadConfigButton: "從文件上傳配置",
     uploadInstruction: "請上傳一个包含您的對象配置的 JSON 文件。",
@@ -600,136 +613,207 @@ const translations = {
     filterLabel: "搜尋物件"
   },
 };
+
+/* -------------------- Functions -------------------- */
+
+/** 
+ * filterObjects: 改為同時搜尋 `obj.text`、`obj.drawer`、`obj.note`
+ * 讓輸入 A1 就可以找到「抽屜= A1」的物品
+ **/
 function filterObjects(searchText) {
   const normalizedSearch = searchText ? searchText.toLowerCase() : '';
   const filteredObjects = rememberedObjects.filter(obj => {
-    const objectText = obj.text.toLowerCase();
-    return normalizedSearch ? objectText.includes(normalizedSearch) : true;
+    const combinedText = (obj.text || '') + ' ' + (obj.drawer || '') + ' ' + (obj.note || '');
+    return combinedText.toLowerCase().includes(normalizedSearch);
   });
-  objectMemory.innerHTML = filteredObjects.map((obj, index) => {
-    const displayText = obj.text;
+  renderObjects(filteredObjects);
+}
+
+/** 將物品渲染到畫面上 **/
+function renderObjects(objectsToRender) {
+  objectMemory.innerHTML = objectsToRender.map((obj, index) => {
+    const displayText = getDisplayText(obj);
+    const noteVal = obj.note || "";
+    const drawerVal = obj.drawer ? `<em style="color:#666;">(Drawer: ${obj.drawer})</em>` : "";
+
     return `
-                    <div class="memory-item">
-                        <div class="memory-controls">
-                            <p>${displayText}</p>
-                            <input type="text" 
-                                class="memory-note" 
-                                placeholder="Add a note..." 
-                                value="${obj.note}"
-                                id="note-${index}">
-                            <button class="mic-button" id="mic-${index}"></button>
-                            <button class="camera-button" onclick="captureObjectPhoto(${index})"></button>
-                            <button class="edit-button" onclick="editMemory(${index})"></button>
-                            <button class="clear-item-button" onclick="clearSingleMemory(${index})">✕</button>
-                        </div>
-                        ${obj.image ? `
-                            <div class="photo-container">
-                                <img src="${obj.image}" class="captured-photo" alt="Captured photo">
-                                <button class="delete-photo-button" onclick="deleteObjectPhoto(${index})">🗑️ Delete photo</button>
-                            </div>
-                        ` : ''}
-                         <div class="memory-item-buttons">
-                            <button onclick="handleButtonClick(${index}, 'A1')">A1</button>
-                            <button onclick="handleButtonClick(${index}, 'A2')">A2</button>
-                            <button onclick="handleButtonClick(${index}, 'A3')">A3</button>
-                            <button onclick="handleButtonClick(${index}, 'B1')">B1</button>
-                            <button onclick="handleButtonClick(${index}, 'B2')">B2</button>
-                            <button onclick="handleButtonClick(${index}, 'B3')">B3</button>
-                        </div>
-                    </div>
-                `;
+      <div class="memory-item">
+        <div class="memory-controls">
+          <p>${displayText} ${drawerVal}</p>
+          <input type="text" 
+              class="memory-note" 
+              placeholder="Add a note..." 
+              value="${noteVal}"
+              id="note-${index}">
+          <button class="mic-button" id="mic-${index}"></button>
+          <button class="camera-button" onclick="captureObjectPhoto(${index})"></button>
+          <button class="edit-button" onclick="editMemory(${index})"></button>
+          <button class="clear-item-button" onclick="clearSingleMemory(${index})">✕</button>
+        </div>
+        ${
+          obj.image
+          ? `
+            <div class="photo-container">
+              <img src="${obj.image}" class="captured-photo" alt="Captured photo">
+              <button class="delete-photo-button" onclick="deleteObjectPhoto(${index})">🗑️ Delete photo</button>
+            </div>
+          `
+          : ''
+        }
+        <div class="memory-item-buttons">
+          <button onclick="handleButtonClick(${index}, 'A1')">A1</button>
+          <button onclick="handleButtonClick(${index}, 'A2')">A2</button>
+          <button onclick="handleButtonClick(${index}, 'A3')">A3</button>
+          <button onclick="handleButtonClick(${index}, 'B1')">B1</button>
+          <button onclick="handleButtonClick(${index}, 'B2')">B2</button>
+          <button onclick="handleButtonClick(${index}, 'B3')">B3</button>
+        </div>
+      </div>
+    `;
   }).join('');
-  filteredObjects.forEach((_, index) => {
-    const noteInput = document.getElementById(`note-${index}`);
+
+  // 綁定記事輸入
+  objectsToRender.forEach((_, i) => {
+    const noteInput = document.getElementById(`note-${i}`);
     if (noteInput) {
       noteInput.addEventListener('input', () => {
-        updateNote(index, noteInput.value);
+        updateNote(i, noteInput.value);
       });
     }
-    setupSpeechRecognition(index);
+    setupSpeechRecognition(i);
   });
 }
+
+/** 取得顯示用文字，若語言不符則嘗試做簡易翻譯 **/
+function getDisplayText(obj) {
+  const currentLang = languageSelect.value;
+  if (!obj.text) return "";
+  
+  if (currentLang !== obj.lang) {
+    const origLower = (obj.originalText || obj.text).toLowerCase();
+    // 先用 originalText 映射到 objectTranslations
+    if (objectTranslations[origLower]) {
+      return objectTranslations[origLower][currentLang] || obj.text;
+    } else {
+      // 否則切開來逐字比對
+      const words = origLower.split(' ');
+      const translatedWords = words.map(word => {
+        if (objectTranslations[word]) {
+          return objectTranslations[word][currentLang] || word;
+        }
+        return word;
+      });
+      return translatedWords.join(' ');
+    }
+  }
+  return obj.text;
+}
+
+/** 進行記憶清單的重新渲染 **/
+function updateObjectMemory() {
+  const searchText = filterInput.value.trim();
+  filterObjects(searchText);
+}
+
+/** 編輯物品資訊對話框 **/
 function editMemory(index) {
   const item = rememberedObjects[index];
   const editDialog = document.createElement('div');
   editDialog.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.2);
-                z-index: 1001;
-                width: 90%;
-                max-width: 400px;
-            `;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 1001;
+    width: 90%;
+    max-width: 400px;
+  `;
   editDialog.innerHTML = `
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" value="${item.text}" 
-                        style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1; font-size: 16px;">
-                    <button class="mic-button" id="edit-mic" style="min-height: 44px; min-width: 44px;"></button>
-                </div>
-                <div style="margin-top: 15px; text-align: right;">
-                    <button onclick="this.parentElement.parentElement.remove()" 
-                        style="padding: 10px 20px; margin-right: 10px; background: #dc3545; color: white; border: none; border-radius: 4px; min-height: 44px;">
-                        Cancel
-                    </button>
-                    <button onclick="saveEdit(${index}, this.parentElement.parentElement)" 
-                        style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; min-height: 44px;">
-                        Save
-                    </button>
-                </div>
-            `;
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <input type="text" value="${item.text || ''}"
+          style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1; font-size: 16px;">
+      <button class="mic-button" id="edit-mic" style="min-height: 44px; min-width: 44px;"></button>
+    </div>
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="this.parentElement.parentElement.remove()" 
+          style="padding: 10px 20px; margin-right: 10px; background: #dc3545; color: white; border: none; border-radius: 4px; min-height: 44px;">
+          Cancel
+      </button>
+      <button onclick="saveEdit(${index}, this.parentElement.parentElement)" 
+          style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; min-height: 44px;">
+          Save
+      </button>
+    </div>
+  `;
   document.body.appendChild(editDialog);
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = languageSelect.value;
-  const micButton = editDialog.querySelector('#edit-mic');
-  const inputField = editDialog.querySelector('input');
-  let isRecording = false;
-  micButton.addEventListener('click', () => {
-    if (isRecording) {
-      recognition.stop();
-    } else {
-      recognition.start();
-    }
-  });
-  recognition.onstart = () => {
-    isRecording = true;
-    micButton.classList.add('recording');
-  };
-  recognition.onend = () => {
-    isRecording = false;
-    micButton.classList.remove('recording');
-  };
-  recognition.onresult = event => {
-    const transcript = event.results[0][0].transcript;
-    inputField.value = transcript;
-  };
+
+  // 語音辨識
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert(translations[languageSelect.value].microphoneNotSupported);
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = languageSelect.value;
+
+    const micButton = editDialog.querySelector('#edit-mic');
+    const inputField = editDialog.querySelector('input');
+    let isRecording = false;
+
+    micButton.addEventListener('click', () => {
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+    recognition.onstart = () => {
+      isRecording = true;
+      micButton.classList.add('recording');
+    };
+    recognition.onend = () => {
+      isRecording = false;
+      micButton.classList.remove('recording');
+    };
+    recognition.onresult = event => {
+      const transcript = event.results[0][0].transcript;
+      inputField.value = transcript;
+    };
+  }
+
+  // 半透明背景
   const overlay = document.createElement('div');
   overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 1000;
-            `;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+  `;
   document.body.appendChild(overlay);
+
   overlay.addEventListener('click', () => {
     overlay.remove();
     editDialog.remove();
   });
+
+  // 自動聚焦
+  const inputField = editDialog.querySelector('input');
   inputField.focus();
   inputField.select();
 }
+
+/** 儲存編輯後的文字 **/
 function saveEdit(index, dialog) {
-  let newText = dialog.querySelector('input').value.trim();
-  newText = newText;
+  const inputField = dialog.querySelector('input');
+  let newText = inputField.value.trim();
   if (newText !== '') {
     rememberedObjects[index].text = newText;
     localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
@@ -738,17 +822,21 @@ function saveEdit(index, dialog) {
   dialog.remove();
   document.querySelector('div[style*="background: rgba(0,0,0,0.5)"]')?.remove();
 }
+
+/** 啟用每個項目的備註輸入 + 語音辨識 **/
 function setupSpeechRecognition(index) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert(translations[languageSelect.value].microphoneNotSupported);
-    return;
+    return; // 若不支援，就直接跳過
   }
   const recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = languageSelect.value;
+
   const micButton = document.getElementById(`mic-${index}`);
+  if (!micButton) return;
+
   let isRecording = false;
   recognition.onstart = () => {
     isRecording = true;
@@ -766,18 +854,18 @@ function setupSpeechRecognition(index) {
   recognition.onresult = event => {
     const note = event.results[0][0].transcript;
     const noteInput = document.getElementById(`note-${index}`);
-    noteInput.value = note;
-    updateNote(index, note);
+    if (noteInput) {
+      noteInput.value = note;
+      updateNote(index, note);
+    }
   };
+
   micButton.addEventListener('click', () => {
     if (isRecording) {
       recognition.stop();
     } else {
-      document.querySelectorAll('.mic-button').forEach(button => {
-        if (button.classList.contains('recording')) {
-          button.classList.remove('recording');
-        }
-      });
+      // 先把其他mic關掉
+      document.querySelectorAll('.mic-button.recording').forEach(btn => btn.classList.remove('recording'));
       try {
         recognition.start();
       } catch (error) {
@@ -789,19 +877,22 @@ function setupSpeechRecognition(index) {
   });
   return recognition;
 }
+
+/** 自訂輸入文字的語音辨識 **/
 function setupCustomObjectSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert(translations[languageSelect.value].microphoneNotSupported);
     return;
   }
   const recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = languageSelect.value;
+
   const micButton = document.getElementById('customObjectMic');
   const customInput = document.getElementById('customObjectInput');
   let isRecording = false;
+
   recognition.onstart = () => {
     isRecording = true;
     micButton.classList.add('recording');
@@ -824,11 +915,7 @@ function setupCustomObjectSpeechRecognition() {
     if (isRecording) {
       recognition.stop();
     } else {
-      document.querySelectorAll('.mic-button').forEach(button => {
-        if (button.classList.contains('recording')) {
-          button.classList.remove('recording');
-        }
-      });
+      document.querySelectorAll('.mic-button.recording').forEach(button => button.classList.remove('recording'));
       try {
         recognition.start();
       } catch (error) {
@@ -839,19 +926,21 @@ function setupCustomObjectSpeechRecognition() {
     }
   });
 }
+
+/** 搜尋輸入框的語音辨識 **/
 function setupFilterSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    alert(translations[languageSelect.value].microphoneNotSupported);
     return;
   }
   const recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = languageSelect.value;
+
   const micButton = document.getElementById('filterMic');
-  const filterInput = document.getElementById('filterInput');
   let isRecording = false;
+
   recognition.onstart = () => {
     isRecording = true;
     micButton.classList.add('recording');
@@ -874,11 +963,7 @@ function setupFilterSpeechRecognition() {
     if (isRecording) {
       recognition.stop();
     } else {
-      document.querySelectorAll('.mic-button').forEach(button => {
-        if (button.classList.contains('recording')) {
-          button.classList.remove('recording');
-        }
-      });
+      document.querySelectorAll('.mic-button.recording').forEach(button => button.classList.remove('recording'));
       try {
         recognition.start();
       } catch (error) {
@@ -889,177 +974,25 @@ function setupFilterSpeechRecognition() {
     }
   });
 }
-function updateObjectMemory() {
-  const currentLang = languageSelect.value;
-  const searchText = filterInput.value.trim();
-  const filteredObjects = rememberedObjects.filter(obj => {
-    const objectText = obj.text.toLowerCase();
-    return searchText ? objectText.includes(searchText.toLowerCase()) : true;
-  });
-  objectMemory.innerHTML = filteredObjects.map((obj, index) => {
-    let displayText = obj.text;
-    if (currentLang !== obj.lang) {
-      if (objectTranslations[obj.originalText?.toLowerCase()]) {
-        displayText = objectTranslations[obj.originalText.toLowerCase()][currentLang] || obj.text;
-      } else {
-        const words = (obj.originalText || obj.text).toLowerCase().split(' ');
-        const translatedWords = words.map(word => {
-          if (objectTranslations[word]) {
-            return objectTranslations[word][currentLang] || word;
-          }
-          return word;
-        });
-        displayText = translatedWords.join(' ');
-      }
-    }
-    return `
-      <div class="memory-item">
-        <div class="memory-controls">
-          <p>${displayText}</p>
-          <input type="text" 
-              class="memory-note" 
-              placeholder="Add a note..." 
-              value="${obj.note}"
-              id="note-${index}">
-          <button class="mic-button" id="mic-${index}"></button>
-          <button class="camera-button" onclick="captureObjectPhoto(${index})"></button>
-          <button class="edit-button" onclick="editMemory(${index})"></button>
-          <button class="clear-item-button" onclick="clearSingleMemory(${index})">✕</button>
-        </div>
-        ${obj.image ? `
-          <div class="photo-container">
-            <img src="${obj.image}" class="captured-photo" alt="Captured photo">
-            <button class="delete-photo-button" onclick="deleteObjectPhoto(${index})">🗑️ Delete photo</button>
-          </div>
-        ` : ''}
-           <div class="memory-item-buttons">
-              <button onclick="handleButtonClick(${index}, 'A1')">A1</button>
-              <button onclick="handleButtonClick(${index}, 'A2')">A2</button>
-              <button onclick="handleButtonClick(${index}, 'A3')">A3</button>
-              <button onclick="handleButtonClick(${index}, 'B1')">B1</button>
-              <button onclick="handleButtonClick(${index}, 'B2')">B2</button>
-              <button onclick="handleButtonClick(${index}, 'B3')">B3</button>
-          </div>
-      </div>
-    `;
-  }).join('');
-  filteredObjects.forEach((obj, index) => {
-    const noteInput = document.getElementById(`note-${index}`);
-    if (noteInput) {
-      noteInput.addEventListener('input', () => {
-        updateNote(index, noteInput.value);
-      });
-    }
-    setupSpeechRecognition(index);
-  });
-}
-async function captureObjectPhoto(index) {
+
+/** 當使用者點選了 A1 / A2 / B1 等等時，不再改動文字，而是存到 item.drawer **/
+function handleButtonClick(index, buttonId) {
   const item = rememberedObjects[index];
-  const modal = document.createElement('div');
-  modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-  const videoElement = document.createElement('video');
-  videoElement.style.cssText = `
-                width: 100%;
-                max-width: 400px;
-                margin-bottom: 20px;
-            `;
-  videoElement.autoplay = true;
-  videoElement.playsinline = true;
-  const buttonContainer = document.createElement('div');
-  buttonContainer.style.cssText = `
-                display: flex;
-                gap: 10px;
-            `;
-  const captureBtn = document.createElement('button');
-  captureBtn.textContent = '📸 Capture';
-  captureBtn.style.cssText = `
-                padding: 10px 20px;
-                background: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            `;
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕ Close';
-  closeBtn.style.cssText = `
-                padding: 10px 20px;
-                background: #dc3545;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            `;
-  buttonContainer.appendChild(captureBtn);
-  buttonContainer.appendChild(closeBtn);
-  modal.appendChild(videoElement);
-  modal.appendChild(buttonContainer);
-  document.body.appendChild(modal);
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        deviceId: cameraSelect.value ? {
-          exact: cameraSelect.value
-        } : undefined
-      }
-    });
-    videoElement.srcObject = stream;
-    closeBtn.onclick = () => {
-      stream.getTracks().forEach(track => track.stop());
-      modal.remove();
-    };
-    captureBtn.onclick = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
-      canvas.getContext('2d').drawImage(videoElement, 0, 0);
-      rememberedObjects[index].image = canvas.toDataURL('image/jpeg');
-      localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
-      updateObjectMemory();
-      stream.getTracks().forEach(track => track.stop());
-      modal.remove();
-      const successMsg = document.createElement('div');
-      successMsg.textContent = 'Photo captured successfully!';
-      successMsg.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: #4CAF50;
-                        color: white;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        z-index: 1001;
-                    `;
-      document.body.appendChild(successMsg);
-      setTimeout(() => successMsg.remove(), 2000);
-    };
-  } catch (err) {
-    console.error('Error accessing camera:', err);
-    modal.innerHTML = `
-                    <div style="color: white; padding: 20px; text-align: center;">
-                        Error accessing camera. Please check your permissions.
-                        <br><br>
-                        <button onclick="this.parentElement.parentElement.remove()" 
-                            style="padding: 10px 20px; background: white; color: black; border: none; border-radius: 5px; cursor: pointer;">
-                            Close
-                        </button>
-                    </div>
-                `;
-  }
+  if (!item) return;
+
+  // 不動 item.text，避免破壞 AI 後續識別
+  item.drawer = buttonId.toUpperCase();
+  localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
+  updateObjectMemory();
 }
+
+/** 更新備註內容 **/
+function updateNote(index, note) {
+  rememberedObjects[index].note = note;
+  localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
+}
+
+/** 清除單一物品 **/
 function clearSingleMemory(index) {
   const lang = languageSelect.value;
   const texts = translations[lang] || translations.en;
@@ -1069,6 +1002,8 @@ function clearSingleMemory(index) {
     updateObjectMemory();
   }
 }
+
+/** 刪除照片 **/
 function deleteObjectPhoto(index) {
   const lang = languageSelect.value;
   const texts = translations[lang] || translations.en;
@@ -1078,10 +1013,121 @@ function deleteObjectPhoto(index) {
     updateObjectMemory();
   }
 }
-function updateNote(index, note) {
-  rememberedObjects[index].note = note;
-  localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
+
+/** 拍照存到物品 **/
+async function captureObjectPhoto(index) {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  `;
+  const videoElement = document.createElement('video');
+  videoElement.style.cssText = `
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+  `;
+  videoElement.autoplay = true;
+  videoElement.playsinline = true;
+
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.cssText = `
+    display: flex;
+    gap: 10px;
+  `;
+  const captureBtn = document.createElement('button');
+  captureBtn.textContent = '📸 Capture';
+  captureBtn.style.cssText = `
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  `;
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕ Close';
+  closeBtn.style.cssText = `
+    padding: 10px 20px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  `;
+  buttonContainer.appendChild(captureBtn);
+  buttonContainer.appendChild(closeBtn);
+
+  modal.appendChild(videoElement);
+  modal.appendChild(buttonContainer);
+  document.body.appendChild(modal);
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        deviceId: cameraSelect.value ? { exact: cameraSelect.value } : undefined
+      }
+    });
+    videoElement.srcObject = stream;
+
+    closeBtn.onclick = () => {
+      stream.getTracks().forEach(track => track.stop());
+      modal.remove();
+    };
+
+    captureBtn.onclick = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+      canvas.getContext('2d').drawImage(videoElement, 0, 0);
+      rememberedObjects[index].image = canvas.toDataURL('image/jpeg');
+
+      localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
+      updateObjectMemory();
+      stream.getTracks().forEach(track => track.stop());
+      modal.remove();
+
+      const successMsg = document.createElement('div');
+      successMsg.textContent = 'Photo captured successfully!';
+      successMsg.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1001;
+      `;
+      document.body.appendChild(successMsg);
+      setTimeout(() => successMsg.remove(), 2000);
+    };
+  } catch (err) {
+    console.error('Error accessing camera:', err);
+    modal.innerHTML = `
+      <div style="color: white; padding: 20px; text-align: center;">
+        Error accessing camera. Please check your permissions.
+        <br><br>
+        <button onclick="this.parentElement.parentElement.remove()" 
+          style="padding: 10px 20px; background: white; color: black; border: none; border-radius: 5px; cursor: pointer;">
+          Close
+        </button>
+      </div>
+    `;
+  }
 }
+
+/** 切換語言 **/
 function updateLanguage(lang) {
   const texts = translations[lang] || translations.en;
   document.querySelector('h1').textContent = texts.title;
@@ -1097,117 +1143,114 @@ function updateLanguage(lang) {
   document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
   document.getElementById('addObjectButton').textContent = texts.addCustomObject;
   updateObjectMemory();
-  const micButtons = document.querySelectorAll(".mic-button");
-  micButtons.forEach(button => {
-    const id = button.id;
-    if (id && id.startsWith("mic-")) {
-      const index = parseInt(id.split("-")[1]);
-      setupSpeechRecognition(index);
-    }
-  });
-  setupCustomObjectSpeechRecognition();
-  setupFilterSpeechRecognition();
 }
+
+/** 取得可用的相機列表 **/
 async function populateCameraList() {
   try {
     const initialStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'environment'
-      }
+      video: { facingMode: 'environment' }
     });
+    // 先拿環境相機
     initialStream.getTracks().forEach(track => track.stop());
+
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(device => device.kind === 'videoinput');
     if (videoDevices.length === 0) {
       throw new Error('No cameras found');
     }
+
     cameraSelect.innerHTML = videoDevices.map(device => {
       const label = device.label || (device.deviceId.includes('back') || device.label.includes('back') ? 'Back Camera' : 'Front Camera');
       return `<option value="${device.deviceId}">${label}</option>`;
     }).join('');
-    const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.deviceId.includes('back'));
+
+    const backCamera = videoDevices.find(d => d.label.toLowerCase().includes('back') || d.deviceId.includes('back'));
     if (backCamera) {
       cameraSelect.value = backCamera.deviceId;
     }
+
     await startCamera(cameraSelect.value);
   } catch (err) {
     console.error('Error accessing camera:', err);
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: #ff4444;
-                    color: white;
-                    padding: 20px;
-                    border-radius: 10px;
-                    text-align: center;
-                    z-index: 1000;
-                    max-width: 80%;
-                `;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ff4444;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 1000;
+      max-width: 80%;
+    `;
     errorDiv.innerHTML = `
-                    Camera access error:<br>
-                    Please make sure you've granted camera permissions.<br><br>
-                    <button onclick="retryCamera()" style="
-                        padding: 10px 20px;
-                        background: white;
-                        color: black;
-                        border: none;
-                        border-radius: 5px;
-                        cursor: pointer;
-                    ">Retry Camera Access</button>
-                `;
+      Camera access error:<br>
+      Please make sure you've granted camera permissions.<br><br>
+      <button onclick="retryCamera()" style="
+          padding: 10px 20px;
+          background: white;
+          color: black;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;">
+          Retry Camera Access
+      </button>
+    `;
     document.body.appendChild(errorDiv);
   }
 }
+
+/** 重新嘗試存取相機 **/
 function retryCamera() {
   const errorDiv = document.querySelector('div[style*="position: fixed"]');
-  if (errorDiv) {
-    errorDiv.remove();
-  }
-  navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: 'environment'
-    }
-  }).then(stream => {
-    stream.getTracks().forEach(track => track.stop());
-    populateCameraList();
-  }).catch(err => {
-    console.error("Error retrying camera:", err);
-    populateCameraList();
-  });
+  if (errorDiv) errorDiv.remove();
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      stream.getTracks().forEach(track => track.stop());
+      populateCameraList();
+    })
+    .catch(err => {
+      console.error("Error retrying camera:", err);
+      populateCameraList();
+    });
 }
+
+/** 開啟選定相機 **/
 async function startCamera(deviceId) {
   const lang = languageSelect.value;
   const texts = translations[lang] || translations.en;
+
   if (currentStream) {
     currentStream.getTracks().forEach(track => track.stop());
   }
   const constraints = {
     video: {
-      deviceId: deviceId ? {
-        exact: deviceId
-      } : undefined,
+      deviceId: deviceId ? { exact: deviceId } : undefined,
       facingMode: deviceId ? undefined : "environment",
-      width: {
-        ideal: 1280
-      },
-      height: {
-        ideal: 720
-      }
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
     }
   };
   try {
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Camera access timeout')), 10000);
     });
-    const stream = await Promise.race([navigator.mediaDevices.getUserMedia(constraints), timeoutPromise]);
+    const stream = await Promise.race([
+      navigator.mediaDevices.getUserMedia(constraints),
+      timeoutPromise
+    ]);
+
     cameraFeed.srcObject = stream;
     currentStream = stream;
     cameraFeed.onplay = () => {
       console.log('Camera stream started successfully');
     };
+
     window.addEventListener('orientationchange', () => {
       setTimeout(() => {
         const track = stream.getVideoTracks()[0];
@@ -1215,12 +1258,8 @@ async function startCamera(deviceId) {
           const capabilities = track.getCapabilities();
           if (capabilities.width && capabilities.height) {
             track.applyConstraints({
-              width: {
-                ideal: window.innerWidth
-              },
-              height: {
-                ideal: window.innerHeight
-              }
+              width: { ideal: window.innerWidth },
+              height: { ideal: window.innerHeight }
             });
           }
         }
@@ -1230,18 +1269,20 @@ async function startCamera(deviceId) {
     console.error("Error accessing camera:", err);
     const errorMessage = document.createElement('div');
     errorMessage.style.cssText = `
-                    background: #ff4444;
-                    color: white;
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    text-align: center;
-                `;
+      background: #ff4444;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      text-align: center;
+    `;
     errorMessage.textContent = texts.cameraError;
     cameraFeed.parentElement.insertBefore(errorMessage, cameraFeed.nextSibling);
     setTimeout(() => errorMessage.remove(), 5000);
   }
 }
+
+/** 拍照並送到 Gemini API 做影像描述 **/
 async function captureAndAnalyze() {
   const lang = languageSelect.value;
   const texts = translations[lang] || translations.en;
@@ -1253,11 +1294,14 @@ async function captureAndAnalyze() {
   captureButton.disabled = true;
   spinner.style.display = 'block';
   analysisResult.textContent = texts.analyzing;
+
+  // 取得相機畫面
   const canvas = document.createElement('canvas');
   canvas.width = cameraFeed.videoWidth;
   canvas.height = cameraFeed.videoHeight;
   canvas.getContext('2d').drawImage(cameraFeed, 0, 0);
   capturedImage = canvas.toDataURL('image/jpeg').split(',')[1];
+
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -1267,7 +1311,7 @@ async function captureAndAnalyze() {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the main object and adjectives describing it. Do not include verbs, people, punctuations, body parts such as hands feet head, actions, or descriptions of movement. Put the adjectives in front of the object. Focus solely on the main object's name and their characteristics.`
+            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the adjectives and object describing it. Do not include verbs, people, punctuations, body parts such as hands feet head, actions, or descriptions of movement. Put the adjectives in front of the object. Focus solely on the main object's name and their characteristics.`
           }, {
             inline_data: {
               mime_type: "image/jpeg",
@@ -1281,8 +1325,24 @@ async function captureAndAnalyze() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-      let mainObject = data.candidates[0].content.parts[0].text.trim().replace(/^(an?|the)\s+/i, '').replace(/\s+with\s+.*$/, '').replace(/\s+featuring\s+.*$/, '').replace(/\s+that\s+.*$/, '').replace(/\s+which\s+.*$/, '').replace(/\s+/g, ' ').trim();
+
+    // 解析回傳結果
+    if (
+      data && data.candidates &&
+      data.candidates[0] && data.candidates[0].content &&
+      data.candidates[0].content.parts
+    ) {
+      let mainObject = data.candidates[0].content.parts[0].text
+        .trim()
+        .replace(/^(an?|the)\s+/i, '')
+        .replace(/\s+with\s+.*$/, '')
+        .replace(/\s+featuring\s+.*$/, '')
+        .replace(/\s+that\s+.*$/, '')
+        .replace(/\s+which\s+.*$/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // 若語言不是英文，嘗試用簡單的表格映射
       let translatedObject = mainObject;
       const targetLang = languageSelect.value;
       if (targetLang !== "en") {
@@ -1295,12 +1355,15 @@ async function captureAndAnalyze() {
         });
         translatedObject = translatedWords.join(" ");
       }
+
       rememberedObjects.unshift({
         text: translatedObject,
         originalText: mainObject,
         note: "",
         lang: targetLang
       });
+
+      // 不再 pop()，容許記錄無上限
       localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
       updateObjectMemory();
     }
@@ -1312,29 +1375,39 @@ async function captureAndAnalyze() {
     spinner.style.display = "none";
   }
 }
+
+/** 儲存設定到檔案 **/
 function saveConfigurationToFile() {
   const jsonData = {
     timestamp: new Date().toISOString(),
     objects: rememberedObjects
   };
   const jsonString = JSON.stringify(jsonData, null, 2);
-  const blob = new Blob([jsonString], {
-    type: "application/json"
-  });
+  const blob = new Blob([jsonString], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "camera-selector-objects.json";
-  alert("Instructions to save the file:\n\n" + "1. A file download will begin\n" + "2. If you don't have one already, create a folder named 'Camera Selector with Gemini Analysis' in your C: drive\n" + "3. Save the file to C:\\Camera Selector with Gemini Analysis\\");
+
+  alert(
+    "Instructions to save the file:\n\n" +
+    "1. A file download will begin\n" +
+    "2. If you don't have one already, create a folder named 'Camera Selector with Gemini Analysis' in your C: drive\n" +
+    "3. Save the file to C:\\Camera Selector with Gemini Analysis\\"
+  );
+
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/** 從檔案上傳設定 **/
 function uploadConfigurationFromFile() {
   const fileInput = document.getElementById("fileInput");
   const uploadButton = document.getElementById("uploadConfigButton");
-  const uploadMessage = document.getElementById("uploadMessage");
+
   fileInput.removeEventListener("change", handleFileUpload);
   uploadButton.removeEventListener("click", triggerFileInput);
+
   function handleFileUpload(event) {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
@@ -1343,12 +1416,16 @@ function uploadConfigurationFromFile() {
         try {
           const data = JSON.parse(e.target.result);
           if (data && data.objects) {
+            // 先清空
             rememberedObjects = [];
             localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
             updateObjectMemory();
+
+            // 載入新資料
             rememberedObjects = data.objects;
             localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
             updateObjectMemory();
+
             uploadMessage.style.display = "block";
             setTimeout(() => {
               uploadMessage.style.display = "none";
@@ -1370,53 +1447,65 @@ function uploadConfigurationFromFile() {
       fileInput.value = "";
     }
   }
+
   function triggerFileInput() {
     fileInput.click();
   }
+
   fileInput.addEventListener("change", handleFileUpload);
   uploadButton.addEventListener("click", triggerFileInput);
 }
+
+/* -------------------- Event Listeners -------------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  // 自訂物品輸入的語音
   setupCustomObjectSpeechRecognition();
+  // 上傳下載功能
   uploadConfigurationFromFile();
+  // 初始化語系
   updateLanguage(languageSelect.value);
+
+  // 先嘗試取得相機列表
   navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: "environment",
-      width: {
-        ideal: 1280
-      },
-      height: {
-        ideal: 720
-      }
-    }
-  }).then(stream => {
+    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+  })
+  .then(stream => {
     stream.getTracks().forEach(track => track.stop());
     populateCameraList();
-  }).catch(err => {
+  })
+  .catch(err => {
     console.error("Error initializing camera:", err);
     populateCameraList();
   });
+
+  // 搜尋輸入框
   filterInput.addEventListener('input', e => {
     const searchText = e.target.value.trim();
     filterObjects(searchText);
   });
+
+  // 語音搜尋
   setupFilterSpeechRecognition();
 });
+
+// 拍照並分析
 captureButton.addEventListener("click", captureAndAnalyze);
+
+// 儲存與上傳
 document.getElementById("saveConfigButtonTop").addEventListener("click", saveConfigurationToFile);
 document.getElementById("saveConfigButtonBottom").addEventListener("click", saveConfigurationToFile);
-captureButton.addEventListener("click", captureAndAnalyze);
-document.getElementById("saveConfigButtonTop").addEventListener("click", saveConfigurationToFile);
-document.getElementById("saveConfigButtonBottom").addEventListener("click", saveConfigurationToFile);
+
+// 切換相機
 cameraSelect.addEventListener("change", event => {
   startCamera(event.target.value);
 });
+
+// 切換語言
 languageSelect.addEventListener("change", event => {
   const newLang = event.target.value;
   updateLanguage(newLang);
-  const micButtons = document.querySelectorAll(".mic-button");
-  micButtons.forEach(button => {
+  // 重新綁定 mic-button
+  document.querySelectorAll(".mic-button").forEach(button => {
     const id = button.id;
     if (id && id.startsWith("mic-")) {
       const index = parseInt(id.split("-")[1]);
@@ -1426,9 +1515,20 @@ languageSelect.addEventListener("change", event => {
   setupCustomObjectSpeechRecognition();
   setupFilterSpeechRecognition();
 });
+
+// 新增自訂物品
 document.getElementById("addObjectButton").addEventListener("click", () => {
   const customInput = document.getElementById("customObjectInput");
-  let customText = customInput.value.trim().replace(/^(an?|the)\s+/i, '').replace(/\s+with\s+.*$/, '').replace(/\s+featuring\s+.*$/, '').replace(/\s+that\s+.*$/, '').replace(/\s+which\s+.*$/, '').replace(/\s+/g, ' ').trim();
+  let customText = customInput.value
+    .trim()
+    .replace(/^(an?|the)\s+/i, '')
+    .replace(/\s+with\s+.*$/, '')
+    .replace(/\s+featuring\s+.*$/, '')
+    .replace(/\s+that\s+.*$/, '')
+    .replace(/\s+which\s+.*$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   if (!customText) {
     alert("Please enter an object name first");
     return;
@@ -1441,21 +1541,26 @@ document.getElementById("addObjectButton").addEventListener("click", () => {
   localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
   updateObjectMemory();
   customInput.value = "";
+
   const successMessage = document.createElement("div");
   successMessage.textContent = translations[languageSelect.value].objectAdded || "Object added successfully!";
   successMessage.style.cssText = `
-                        color: green;
-                        margin-top: 5px;
-                        font-size: 14px;
-                    `;
+    color: green;
+    margin-top: 5px;
+    font-size: 14px;
+  `;
   customInput.parentElement.appendChild(successMessage);
   setTimeout(() => successMessage.remove(), 2000);
 });
+
+// 按下 Enter 新增物品
 document.getElementById("customObjectInput").addEventListener("keypress", e => {
   if (e.key === "Enter") {
     document.getElementById("addObjectButton").click();
   }
 });
+
+// 自動搜尋
 document.getElementById("customObjectInput").addEventListener("input", e => {
   const searchText = e.target.value.trim();
   if (searchText) {
@@ -1464,72 +1569,9 @@ document.getElementById("customObjectInput").addEventListener("input", e => {
     filterObjects();
   }
 });
+
+// 初始化
 updateLanguage("en");
 updateObjectMemory();
-function updateLanguage(lang) {
-  const texts = translations[lang] || translations.en;
-  document.querySelector('h1').textContent = texts.title;
-  apiKeyInput.placeholder = texts.apiKeyPlaceholder;
-  captureButton.textContent = texts.captureButton;
-  document.querySelector('h2#remembered-objects').textContent = texts.rememberedObjects;
-  document.querySelector('h2.filter-label').textContent = texts.filterLabel || "Search Objects";
-  document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
-  document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
-  document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
-  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
-  uploadMessage.textContent = texts.uploadFinished;
-  document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
-  document.getElementById('addObjectButton').textContent = texts.addCustomObject;
-  updateObjectMemory();
-  const micButtons = document.querySelectorAll(".mic-button");
-  micButtons.forEach(button => {
-    const id = button.id;
-    if (id && id.startsWith("mic-")) {
-      const index = parseInt(id.split("-")[1]);
-      setupSpeechRecognition(index);
-    }
-  });
-  setupCustomObjectSpeechRecognition();
-  setupFilterSpeechRecognition();
-}
-updateLanguage("en");
-updateObjectMemory();
-function updateLanguage(lang) {
-  const texts = translations[lang] || translations.en;
-  document.querySelector('h1').textContent = texts.title;
-  apiKeyInput.placeholder = texts.apiKeyPlaceholder;
-  captureButton.textContent = texts.captureButton;
-  document.querySelector('h2#remembered-objects').textContent = texts.rememberedObjects;
-  document.querySelector('h2.filter-label').textContent = texts.filterLabel || "Search Objects";
-  document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
-  document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
-  document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
-  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
-  uploadMessage.textContent = texts.uploadFinished;
-  document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
-  document.getElementById('addObjectButton').textContent = texts.addCustomObject;
-  updateObjectMemory();
-  const micButtons = document.querySelectorAll(".mic-button");
-  micButtons.forEach(button => {
-    const id = button.id;
-    if (id && id.startsWith("mic-")) {
-      const index = parseInt(id.split("-")[1]);
-      setupSpeechRecognition(index);
-    }
-  });
-  setupCustomObjectSpeechRecognition();
-  setupFilterSpeechRecognition();
-}
-function handleButtonClick(index, buttonId) {
-  console.log(`Button ${buttonId} clicked for object at index ${index}`);
-  const item = rememberedObjects[index];
-  if (item) {
-    console.log("Object: ", item);
-    rememberedObjects[index].text = rememberedObjects[index].text.replace(/, [A-B][1-3]$/, '');
-    rememberedObjects[index].text = rememberedObjects[index].text + `, ${buttonId.toUpperCase()}`; // 強制轉為大寫
-    localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
-    updateObjectMemory();
-  }
-}
-</script>
+    </script>
 </body></html>
