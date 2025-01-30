@@ -1,7 +1,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Camera Selector with Gemini Analysis and Object Memory</title>
+    <title>AI Object Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -125,7 +125,7 @@
             border-radius: 3px;
             padding: 8px 16px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 20px;
             margin-right: 5px;
             min-height: 44px;
             min-width: 44px;
@@ -133,22 +133,38 @@
         .edit-button:hover {
             background-color: #e0a800;
         }
+        .edit-button::before {
+            content: '✎';
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
+        }
         .mic-button, .camera-button {
             min-height: 44px;
             min-width: 44px;
             padding: 8px 16px;
         }
         .mic-button {
-            background-color: #4a90e2;
-            color: white;
+            background-color: #e0f7fa;
+            color: black;
             border: none;
             border-radius: 3px;
             cursor: pointer;
             font-size: 12px;
             margin-right: 5px;
+            padding: 0; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-button::before {
+            content: '🎤';
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
         }
         .mic-button:hover {
-            background-color: #357abd;
+            background-color: #cccccc;
         }
         .mic-button.recording {
             background-color: #dc3545;
@@ -159,27 +175,8 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        .edit-dialog {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-        .add-object-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        .add-object-button:hover {
-            background-color: #45a049;
-        }
         .camera-button {
-            background-color: #17a2b8;
+            background-color: #77dd77;
             color: white;
             border: none;
             border-radius: 3px;
@@ -187,9 +184,18 @@
             cursor: pointer;
             font-size: 12px;
             margin-right: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-button::before {
+            content: '📷';
+            font-size: 20px;
+            display: inline-block;
+            line-height: 1;
         }
         .camera-button:hover {
-            background-color: #138496;
+            background-color: #5cb85c;
         }
         .delete-photo-button {
             background-color: #ff4444;
@@ -291,13 +297,33 @@
             margin-bottom: 5px;
             margin-top: 20px;
         }
+        .memory-item-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .memory-item-buttons button {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: #ffff00;
+            cursor: pointer;
+            min-height: auto;
+            min-width: auto;
+            color: black;
+        }
+        .memory-item-buttons button:hover {
+            background-color: #e0e0e0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="title-container">
             <img src="/a/bf8c50d1-fef0-4f67-80c8-d536201a1eda" alt="A vibrant red rose with detailed petals" class="title-rose">
-            <h1 id="title">Camera Selector with Gemini Analysis and Object Memory</h1>
+            <h1 id="title">AI Object Tracker</h1>
         </div>
         <button id="saveConfigButtonTop" class="save-config-button">Save Configuration to File</button>
         <input type="text" id="apiKeyInput" placeholder="Enter your Gemini API key">
@@ -324,12 +350,12 @@
         <h2 class="filter-label" id="filter-label">Search Objects</h2>
         <div class="filter-input-container">
           <input type="text" id="filterInput" class="filter-input" placeholder="Filter remembered objects...">
-          <button class="mic-button" id="filterMic">&#x1f3a4;</button>
+          <button class="mic-button" id="filterMic"></button>
        </div>
        <h2 id="remembered-objects">Remembered Objects</h2>
         <div class="custom-object-container">
             <input type="text" id="customObjectInput" placeholder="Type a custom object to remember...">
-            <button class="mic-button" id="customObjectMic">&#x1f3a4;</button>
+            <button class="mic-button" id="customObjectMic"></button>
             <button id="addObjectButton" class="add-object-button">Add Object</button>
         </div>
         <div id="objectMemory"></div>
@@ -367,7 +393,7 @@ const objectTranslations = {
 };
 const translations = {
   en: {
-    title: "Camera Selector with Gemini Analysis and Object Memory",
+    title: "Smart Object Keeper",
     apiKeyPlaceholder: "Enter your Gemini API key",
     captureButton: "Capture Photo and Analyze",
     rememberedObjects: "Remembered Objects",
@@ -390,7 +416,7 @@ const translations = {
     filterLabel: "Search Objects"
   },
   es: {
-    title: "Selector de Cámara con Análisis Gemini y Memoria de Objetos",
+    title: "Administrador Inteligente de Objetos",
     apiKeyPlaceholder: "Ingrese su clave API de Gemini",
     captureButton: "Capturar Foto y Analizar",
     rememberedObjects: "Objetos Recordados",
@@ -413,7 +439,7 @@ const translations = {
     filterLabel: "Buscar Objetos"
   },
   fr: {
-    title: "Sélecteur de Caméra avec Analyse Gemini et Mémoire d'Objets",
+    title: "Gestionnaire Intelligent d'Objets",
     apiKeyPlaceholder: "Entrez votre clé API Gemini",
     captureButton: "Capturer et Analyser la Photo",
     rememberedObjects: "Objets Mémorisés",
@@ -436,30 +462,30 @@ const translations = {
     filterLabel: "Rechercher les Objets"
   },
   ko: {
-    "title": "카메라 선택기와 Gemini 분석 및 객체 메모리",
+    "title": "스마트 오브젝트 키퍼",
     "apiKeyPlaceholder": "Gemini API 키를 입력하세요",
     "captureButton": "사진 캡처 및 분석",
     "rememberedObjects": "기억된 객체",
     "analyzing": "사진을 캡처하고 분석 중...",
     "apiKeyError": "Gemini API 키를 입력해주세요.",
-    "cameraError": "선택한 카메라에 접근할 수 없습니다. 다른 카메ライン을 시도하거나 권한을 확인하세요.",
+    "cameraError": "선택한 카메라에 접근할 수 없습니다. 다른 카메라인을 시도하거나 권한을 확인하세요.",
     "initError": "사용 가능한 카메라가 없습니다. 기기와 권한을 확인하세요.",
     "saveConfigButton": "설정을 파일로 저장",
     "deleteConfirm": "이 항목을 삭제하시겠습니까?",
     "editPrompt": "객체 편집:",
-    "customObjectPlaceholder": "저장할 사용자 정의 객체를 입력하세요...",
+    "customObjectPlaceholder": "기억할 사용자 정의 객체를 입력하세요...",
     "addCustomObject": "객체 추가",
     "microphoneNotSupported": "이 브라우저는 음성 인식을 지원하지 않습니다.",
     "objectAdded": "객체가 추가되었습니다!",
     "deletePhotoConfirm": "이 사진을 삭제하시겠습니까?",
     "uploadConfigButton": "파일에서 설정 업로드",
-    "uploadInstruction": "객체 설정이 포함된 JSON 파일을 업로드하세요.",
-     filterPlaceholder:  "기억된 객체를 필터링...",
+    "uploadInstruction": "객체 설정을 포함하는 JSON 파일을 업로드하세요.",
+    filterPlaceholder:  "기억된 객체를 필터링...",
     "uploadFinished": "업로드 완료",
     filterLabel: "객체 검색"
   },
   de: {
-    "title": "Kamera-Auswahl mit Gemini-Analyse und Objektspeicher",
+     "title": "Intelligenter Objekthalter",
     "apiKeyPlaceholder": "Geben Sie Ihren Gemini-API-Schlüssel ein",
     "captureButton": "Foto aufnehmen und analysieren",
     "rememberedObjects": "Gespeicherte Objekte",
@@ -477,12 +503,12 @@ const translations = {
     "deletePhotoConfirm": "Sind Sie sicher, dass Sie dieses Foto löschen möchten?",
     "uploadConfigButton": "Einstellungen aus Datei hochladen",
     "uploadInstruction": "Bitte laden Sie eine JSON-Datei mit Ihren Objektkonfigurationen hoch.",
-    filterPlaceholder:  "Gespeicherte Objekte filtern...",
+    filterPlaceholder: "Gespeicherte Objekte filtern...",
     "uploadFinished": "Upload abgeschlossen",
-     filterLabel: "Objekte suchen"
+    filterLabel: "Objekte suchen"
   },
   it: {
-    "title": "Selettore di Fotocamera con Analisi Gemini e Memoria Oggetti",
+    "title": "Gestore Intelligente di Oggetti",
     "apiKeyPlaceholder": "Inserisci la tua chiave API di Gemini",
     "captureButton": "Cattura Foto e Analizza",
     "rememberedObjects": "Oggetti Salvati",
@@ -502,10 +528,10 @@ const translations = {
     "uploadInstruction": "Carica un file JSON che contenga le tue configurazioni degli oggetti.",
     filterPlaceholder: "Filtra gli oggetti memorizzati...",
     "uploadFinished": "Caricamento completato",
-     filterLabel: "Cerca oggetti"
+    filterLabel: "Cerca oggetti"
   },
   pt: {
-    "title": "Seletor de Câmera com Análise Gemini e Memória de Objetos",
+     "title": "Guardião Inteligente de Objetos",
     "apiKeyPlaceholder": "Insira sua chave API do Gemini",
     "captureButton": "Capturar Foto e Analisar",
     "rememberedObjects": "Objetos Salvos",
@@ -528,7 +554,7 @@ const translations = {
     filterLabel: "Procurar objetos"
   },
   'ja': {
-    title: "Gemini解析カメラセレクターとオブジェクトメモリ",
+    title: "スマートオブジェクトキーパー",
     apiKeyPlaceholder: "Gemini APIキーを入力してください",
     captureButton: "写真を撮って解析する",
     rememberedObjects: "記憶されたオブジェクト",
@@ -551,7 +577,7 @@ const translations = {
     filterLabel: "オブジェクトを検索"
   },
   'zh-TW': {
-     title: "Gemini 分析相機選擇器 和 物體記憶",
+     title: "智慧物品管理員",
     apiKeyPlaceholder: "請輸入您的 Gemini API 金鑰",
     captureButton: "拍攝照片並分析",
     rememberedObjects: "記住的物件",
@@ -568,9 +594,9 @@ const translations = {
     objectAdded: '物件新增成功！',
     deletePhotoConfirm: "您確定要刪除這張照片嗎？",
     uploadConfigButton: "從文件上傳配置",
-    uploadInstruction: "請上傳一個包含您的對象配置的 JSON 文件。",
+    uploadInstruction: "請上傳一个包含您的對象配置的 JSON 文件。",
     filterPlaceholder: "篩選已記住的物件...",
-     uploadFinished: "上傳完成",
+    uploadFinished: "上傳完成",
     filterLabel: "搜尋物件"
   },
 };
@@ -591,9 +617,9 @@ function filterObjects(searchText) {
                                 placeholder="Add a note..." 
                                 value="${obj.note}"
                                 id="note-${index}">
-                            <button class="mic-button" id="mic-${index}">🎤</button>
-                            <button class="camera-button" onclick="captureObjectPhoto(${index})">📷</button>
-                            <button class="edit-button" onclick="editMemory(${index})">✎</button>
+                            <button class="mic-button" id="mic-${index}"></button>
+                            <button class="camera-button" onclick="captureObjectPhoto(${index})"></button>
+                            <button class="edit-button" onclick="editMemory(${index})"></button>
                             <button class="clear-item-button" onclick="clearSingleMemory(${index})">✕</button>
                         </div>
                         ${obj.image ? `
@@ -602,6 +628,14 @@ function filterObjects(searchText) {
                                 <button class="delete-photo-button" onclick="deleteObjectPhoto(${index})">🗑️ Delete photo</button>
                             </div>
                         ` : ''}
+                         <div class="memory-item-buttons">
+                            <button onclick="handleButtonClick(${index}, 'A1')">A1</button>
+                            <button onclick="handleButtonClick(${index}, 'A2')">A2</button>
+                            <button onclick="handleButtonClick(${index}, 'A3')">A3</button>
+                            <button onclick="handleButtonClick(${index}, 'B1')">B1</button>
+                            <button onclick="handleButtonClick(${index}, 'B2')">B2</button>
+                            <button onclick="handleButtonClick(${index}, 'B3')">B3</button>
+                        </div>
                     </div>
                 `;
   }).join('');
@@ -635,7 +669,7 @@ function editMemory(index) {
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" value="${item.text}" 
                         style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1; font-size: 16px;">
-                    <button class="mic-button" id="edit-mic" style="min-height: 44px; min-width: 44px;">🎤</button>
+                    <button class="mic-button" id="edit-mic" style="min-height: 44px; min-width: 44px;"></button>
                 </div>
                 <div style="margin-top: 15px; text-align: right;">
                     <button onclick="this.parentElement.parentElement.remove()" 
@@ -887,9 +921,9 @@ function updateObjectMemory() {
               placeholder="Add a note..." 
               value="${obj.note}"
               id="note-${index}">
-          <button class="mic-button" id="mic-${index}">🎤</button>
-          <button class="camera-button" onclick="captureObjectPhoto(${index})">📷</button>
-          <button class="edit-button" onclick="editMemory(${index})">✎</button>
+          <button class="mic-button" id="mic-${index}"></button>
+          <button class="camera-button" onclick="captureObjectPhoto(${index})"></button>
+          <button class="edit-button" onclick="editMemory(${index})"></button>
           <button class="clear-item-button" onclick="clearSingleMemory(${index})">✕</button>
         </div>
         ${obj.image ? `
@@ -898,6 +932,14 @@ function updateObjectMemory() {
             <button class="delete-photo-button" onclick="deleteObjectPhoto(${index})">🗑️ Delete photo</button>
           </div>
         ` : ''}
+           <div class="memory-item-buttons">
+              <button onclick="handleButtonClick(${index}, 'A1')">A1</button>
+              <button onclick="handleButtonClick(${index}, 'A2')">A2</button>
+              <button onclick="handleButtonClick(${index}, 'A3')">A3</button>
+              <button onclick="handleButtonClick(${index}, 'B1')">B1</button>
+              <button onclick="handleButtonClick(${index}, 'B2')">B2</button>
+              <button onclick="handleButtonClick(${index}, 'B3')">B3</button>
+          </div>
       </div>
     `;
   }).join('');
@@ -1050,6 +1092,8 @@ function updateLanguage(lang) {
   document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
   document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
   document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
+  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
+  uploadMessage.textContent = texts.uploadFinished;
   document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
   document.getElementById('addObjectButton').textContent = texts.addCustomObject;
   updateObjectMemory();
@@ -1237,7 +1281,7 @@ async function captureAndAnalyze() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    if (data && data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+    if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
       let mainObject = data.candidates[0].content.parts[0].text.trim().replace(/^(an?|the)\s+/i, '').replace(/\s+with\s+.*$/, '').replace(/\s+featuring\s+.*$/, '').replace(/\s+that\s+.*$/, '').replace(/\s+which\s+.*$/, '').replace(/\s+/g, ' ').trim();
       let translatedObject = mainObject;
       const targetLang = languageSelect.value;
@@ -1257,9 +1301,6 @@ async function captureAndAnalyze() {
         note: "",
         lang: targetLang
       });
-      if (rememberedObjects.length > 5) {
-        rememberedObjects.pop();
-      }
       localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
       updateObjectMemory();
     }
@@ -1397,9 +1438,6 @@ document.getElementById("addObjectButton").addEventListener("click", () => {
     note: "",
     lang: languageSelect.value
   });
-  if (rememberedObjects.length > 5) {
-    rememberedObjects.pop();
-  }
   localStorage.setItem("rememberedObjects", JSON.stringify(rememberedObjects));
   updateObjectMemory();
   customInput.value = "";
@@ -1453,6 +1491,45 @@ function updateLanguage(lang) {
   });
   setupCustomObjectSpeechRecognition();
   setupFilterSpeechRecognition();
+}
+updateLanguage("en");
+updateObjectMemory();
+function updateLanguage(lang) {
+  const texts = translations[lang] || translations.en;
+  document.querySelector('h1').textContent = texts.title;
+  apiKeyInput.placeholder = texts.apiKeyPlaceholder;
+  captureButton.textContent = texts.captureButton;
+  document.querySelector('h2#remembered-objects').textContent = texts.rememberedObjects;
+  document.querySelector('h2.filter-label').textContent = texts.filterLabel || "Search Objects";
+  document.getElementById('saveConfigButtonTop').textContent = texts.saveConfigButton;
+  document.getElementById('saveConfigButtonBottom').textContent = texts.saveConfigButton;
+  document.getElementById('customObjectInput').placeholder = texts.customObjectPlaceholder;
+  document.getElementById('uploadConfigButton').textContent = texts.uploadConfigButton;
+  uploadMessage.textContent = texts.uploadFinished;
+  document.getElementById('filterInput').placeholder = texts.filterPlaceholder;
+  document.getElementById('addObjectButton').textContent = texts.addCustomObject;
+  updateObjectMemory();
+  const micButtons = document.querySelectorAll(".mic-button");
+  micButtons.forEach(button => {
+    const id = button.id;
+    if (id && id.startsWith("mic-")) {
+      const index = parseInt(id.split("-")[1]);
+      setupSpeechRecognition(index);
+    }
+  });
+  setupCustomObjectSpeechRecognition();
+  setupFilterSpeechRecognition();
+}
+function handleButtonClick(index, buttonId) {
+  console.log(`Button ${buttonId} clicked for object at index ${index}`);
+  const item = rememberedObjects[index];
+  if (item) {
+    console.log("Object: ", item);
+    rememberedObjects[index].text = rememberedObjects[index].text.replace(/, [A-B][1-3]$/, '');
+    rememberedObjects[index].text = rememberedObjects[index].text + `, ${buttonId.toUpperCase()}`; // 強制轉為大寫
+    localStorage.setItem('rememberedObjects', JSON.stringify(rememberedObjects));
+    updateObjectMemory();
+  }
 }
 </script>
 </body></html>
