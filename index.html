@@ -1267,7 +1267,7 @@ async function captureAndAnalyze() {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the adjectives and object describing it. Do not include verbs, people, punctuations, body parts such as hands feet head, actions, or descriptions of movement. Put the adjectives in front of the object. Focus solely on the main object's name and their characteristics.`
+            text: `Analyze this image and describe what you see in ${languageSelect.options[languageSelect.selectedIndex].text}. Only provide the name of the main object and adjectives describing it. Do not include verbs, people, punctuations, body parts such as hands feet head, actions, or descriptions of movement. Put the adjectives in front of the object. Focus solely on the main object's name and their characteristics.`
           }, {
             inline_data: {
               mime_type: "image/jpeg",
